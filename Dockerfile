@@ -11,7 +11,12 @@ LABEL about.documentation="http://github.com/Lipinski-B/RNAseq/README.md"
 LABEL about.license="GNU-3.0"
 
 
+
+
 ################## INSTALLATION ######################
+
+
+
 RUN apt-get update --allow-releaseinfo-change && \
     apt-get install -y --no-install-recommends \
     curl \
@@ -28,7 +33,13 @@ RUN curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_6
     bash /tmp/miniconda.sh -b -p /opt/conda && \
     rm /tmp/miniconda.sh
 
-ENV PATH="/opt/conda/bin:$PATH"
+RUN apt-get update && apt-get install -y --no-install-recommends wget
+RUN wget https://github.com/pachterlab/kallisto/releases/download/v0.51.1/kallisto_linux-v0.51.1.tar.gz && \
+    tar -xvf kallisto_linux-v0.51.1.tar.gz -C /opt/
+COPY --from=kallisto-source /opt/kallisto /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/kallisto
+ENV PATH="/usr/local/bin:$PATH"
 COPY environnement.yml /
 RUN conda env create -n RNAseq -f /environnement.yml && conda clean -a
 RUN pip install cget
