@@ -21,17 +21,18 @@ def nextflowMessage() {
 */
 log.info "--------------------------------------------------------------------------------------"
 log.info ""
-log.info "          Pipeline RNAseq for the Differential Expression analysis."
+log.info ""
+log.info "          RNAseq pipeline for the Differential Expression analysis."
 log.info ""
 log.info ""
-
+log.info ""
 
 if (params.help) {
     log.info "------------------------------------------------------------------------------------------------------------------------------"
     log.info "  USAGE : nextflow run Lipinski-B/RNAseq --input /data/ --output /output/ "
     log.info "------------------------------------------------------------------------------------------------------------------------------"
     log.info ""
-    log.info "nextflow run Lipinski-B/RNAseq [-r vX.X -profile docker/singularity] [OPTIONS]"
+    log.info "nextflow run Lipinski-B/RNAseq [-r v1.0 -profile docker] [OPTIONS]"
     log.info ""
     log.info "Mandatory arguments:"
     log.info ""
@@ -39,11 +40,8 @@ if (params.help) {
     log.info "--output                      FOLDER                      Folder where you want to find your result."
     log.info ""
     log.info "Optional arguments:"
-    log.info "--mapper                      STRING                      [STAR/BWA] Choose the mapper to use between STAR and BWA MEME (Default : BWA MEM)"
-    log.info "--R                           STRING                      [on/off] : Chose to use or not the standard R analyses from the pipeline."
-    log.info "--metadata                    FILE                        Path where you can find the XLS file to use as metadata for the R analyse. Mandatory is the option --R in on."
-    log.info "--thread                      INT                         Number of thread to use."
-  
+    log.info "--protocol                    STRING                      [PE/SE] Choose the protocol to analyse (Default : PE)"
+    
     exit 0
 } else {
     log.info "-------------------------------- Nextflow parameters ---------------------------------"
@@ -72,6 +70,8 @@ if (params.help) {
     log.info "date                 : ${params.date}"
     log.info "input                : ${params.input}"
     log.info "output               : ${params.output}"
+    log.info "protocol             : ${params.protocol}"
+    log.info "cpu                  : ${params.cpu}"
     log.info ""
     log.info "--------------------------------------------------------------------------------------"
     log.info ""
@@ -90,10 +90,17 @@ workflow RNAseq {
         fastq
 
     main:    
+        FASTQC(fastq)
+        MULTIQC(FASTQC.out.FASTQC_result.collect())
+
         KALISTO_INDEX()
-        KALISTO_SINGLE_END(fastq,KALISTO_INDEX.out.KALISTO_INDEX_result)
-        KALISTO_PAIRED_END(fastq,KALISTO_INDEX.out.KALISTO_INDEX_result)
         
+        if (params.protocol == "SE") {
+            KALISTO_SINGLE_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
+        } else if (params.protocol == "PE") {
+            KALISTO_SINGLE_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
+            KALISTO_PAIRED_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
+        }
     
     //emit:
         //result = Result_all.out
@@ -116,13 +123,60 @@ workflow {
 
 
 
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PROCESS AVAILABLE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+process FASTQC {
+    publishDir "${params.output}/00_QC", mode: 'copy', pattern: '{*fastqc.zip}'
+	cpus "${params.cpu}"
+        
+    input:
+        tuple val(ID), path(fastq)
+	
+    output:
+	    path("*.zip"), emit : FASTQC_result
+
+	shell:
+	R1 = fastq.find { it =~ /_R1\.fastq\.gz$/ }
+    R2 = fastq.find { it =~ /_R2\.fastq\.gz$/ }
+
+    if (params.protocol == "SE") {
+        pairs="${R1} ${R2}"
+    }else{
+        pairs="${R2}"
+    }
+
+    '''
+	fastqc -t !{task.cpus} !{pairs}
+    '''
+}
+
+process MULTIQC {
+    cpus '1'
+    publishDir "${params.output}/00_QC", mode: 'copy'
+
+    input:
+        path(file) 
+
+    output:
+        path("multiqc_report.html")
+        path("multiqc_data")
+    
+    shell:
+    '''
+    multiqc .
+    '''
+}
+
+
+
 process KALISTO_INDEX {
     tag "INDEX"
-    cpus 20
-    memory 40.GB
     publishDir "${params.output}/00_INDEX", mode: 'copy'
-    container  "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?  "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg" : null }"
-    containerOptions "--bind /mnt:/mnt"
+    cpus "${params.cpu}"
 
     output:
         path("Homo_sapiens.GRCh38.index"), emit : KALISTO_INDEX_result
@@ -133,19 +187,13 @@ process KALISTO_INDEX {
 
     wget https://ftp.ensembl.org/pub/release-104/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
     kallisto index --threads ${task.cpus} -i Homo_sapiens.GRCh38.index Homo_sapiens.GRCh38.cdna.all.fa.gz
-    
     """
 }
 
-
-
 process KALISTO_SINGLE_END {
     tag "${ID}"
-    cpus 4
-    memory 16.GB
     publishDir "${params.output}/01_KALLISTO", mode: 'copy'
-    container  "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?  "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg" : null }"
-    containerOptions "--bind /mnt:/mnt"
+    cpus "${params.cpu}"
 
     input:
         tuple val(ID), path(fastq)
@@ -163,15 +211,10 @@ process KALISTO_SINGLE_END {
     """
 }
 
-
-
 process KALISTO_PAIRED_END {
     tag "${ID}"
-    cpus 4
-    memory 16.GB
     publishDir "${params.output}/01_KALLISTO", mode: 'copy'
-    container  "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?  "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg" : null }"
-    containerOptions "--bind /mnt:/mnt"
+    cpus "${params.cpu}"
 
     input:
         tuple val(ID), path(fastq)
@@ -190,12 +233,12 @@ process KALISTO_PAIRED_END {
 
 
 
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 
 workflow.onComplete {
 	this.nextflowMessage()

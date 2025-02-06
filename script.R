@@ -1,8 +1,10 @@
 library(jsonlite)
 library(dplyr)
 library(ggplot2)
+library(tidyverse)
+library("DESeq2")
 
-logs.path <- "I:/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/result/01_KALLISTO/"
+logs.path <- "/home/bobo/Bureau/Git/result/01_KALLISTO/"
 logs.files <- list.files(logs.path, pattern = "_*E_run_info.json$", full.names = TRUE)
 logs.result <- data.frame()
 
@@ -58,8 +60,8 @@ ggplot(logs.subset) + aes(x = Protocol, y = Value, fill = Condition) +
 
 
 
-library("DESeq2")
-counts.path <- "I:/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/result/01_KALLISTO/"
+
+counts.path <- "/home/bobo/Bureau/Git/result/01_KALLISTO/"
 counts.files <- list.files(counts.path, pattern = "_*E_abundance.tsv", full.names = TRUE)
 counts.result <- data.frame()
 
@@ -105,7 +107,6 @@ y <- list("y"= y,"tr"= tr, "result"=result)
 
 
 # Volcano plot
-library(tidyverse)
 data <- y[['tr']]$table
 
 FC=2
