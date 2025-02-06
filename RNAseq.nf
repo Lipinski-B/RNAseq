@@ -72,7 +72,6 @@ if (params.help) {
     log.info "date                 : ${params.date}"
     log.info "input                : ${params.input}"
     log.info "output               : ${params.output}"
-    log.info "n                    : ${params.n}"
     log.info ""
     log.info "--------------------------------------------------------------------------------------"
     log.info ""
@@ -111,7 +110,7 @@ workflow RNAseq {
 */
 
 workflow {
-    RNAseq(Channel.fromFilePairs("/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/data/demultiplexed/*_R{1,2}.fastq.gz", checkIfExists:true))
+    RNAseq(Channel.fromFilePairs("${params.input}/*_R{1,2}.fastq.gz", checkIfExists:true))
 }
 
 
@@ -121,7 +120,7 @@ process KALISTO_INDEX {
     tag "INDEX"
     cpus 20
     memory 40.GB
-    publishDir "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/result/00_INDEX", mode: 'copy'
+    publishDir "${params.output}/00_INDEX", mode: 'copy'
     container  "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?  "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg" : null }"
     containerOptions "--bind /mnt:/mnt"
 
@@ -144,7 +143,7 @@ process KALISTO_SINGLE_END {
     tag "${ID}"
     cpus 4
     memory 16.GB
-    publishDir "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/result/01_KALLISTO", mode: 'copy'
+    publishDir "${params.output}/01_KALLISTO", mode: 'copy'
     container  "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?  "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg" : null }"
     containerOptions "--bind /mnt:/mnt"
 
@@ -170,7 +169,7 @@ process KALISTO_PAIRED_END {
     tag "${ID}"
     cpus 4
     memory 16.GB
-    publishDir "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/result/01_KALLISTO", mode: 'copy'
+    publishDir "${params.output}/01_KALLISTO", mode: 'copy'
     container  "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?  "/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg" : null }"
     containerOptions "--bind /mnt:/mnt"
 
