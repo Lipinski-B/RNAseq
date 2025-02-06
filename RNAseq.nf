@@ -9,17 +9,83 @@
 
 nextflow.enable.dsl = 2
 
-
-//
-// WORKFLOW: Run main Lipinski-B/RNAseq analysis pipeline
-//
-
-workflow {
-    RNAseq(Channel.fromFilePairs("/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/data/demultiplexed/*_R{1,2}.fastq.gz", checkIfExists:true))
+def nextflowMessage() {
+    log.info "N E X T F L O W  ~  DSL 2  ~  version ${workflow.nextflow.version} ${workflow.nextflow.build}"
 }
 
 
-//RUN MAIN WORKFLOW
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    LOG INFO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+log.info "--------------------------------------------------------------------------------------"
+log.info ""
+log.info "          Pipeline RNAseq for the Differential Expression analysis."
+log.info ""
+log.info ""
+
+
+if (params.help) {
+    log.info "------------------------------------------------------------------------------------------------------------------------------"
+    log.info "  USAGE : nextflow run Lipinski-B/RNAseq --input /data/ --output /output/ "
+    log.info "------------------------------------------------------------------------------------------------------------------------------"
+    log.info ""
+    log.info "nextflow run Lipinski-B/RNAseq [-r vX.X -profile docker/singularity] [OPTIONS]"
+    log.info ""
+    log.info "Mandatory arguments:"
+    log.info ""
+    log.info "--input                       FOLDER                      Folder where you can find your data (fasta/fastq files)."
+    log.info "--output                      FOLDER                      Folder where you want to find your result."
+    log.info ""
+    log.info "Optional arguments:"
+    log.info "--mapper                      STRING                      [STAR/BWA] Choose the mapper to use between STAR and BWA MEME (Default : BWA MEM)"
+    log.info "--R                           STRING                      [on/off] : Chose to use or not the standard R analyses from the pipeline."
+    log.info "--metadata                    FILE                        Path where you can find the XLS file to use as metadata for the R analyse. Mandatory is the option --R in on."
+    log.info "--thread                      INT                         Number of thread to use."
+  
+    exit 0
+} else {
+    log.info "-------------------------------- Nextflow parameters ---------------------------------"
+    log.info ""
+    log.info "Project              : $workflow.projectDir"
+    log.info "Git repository       : $workflow.repository"
+    log.info "Release [Commit ID]  : $workflow.revision [$workflow.commitId]"
+    log.info "User Name            : $workflow.userName"
+    log.info "Run Name             : $workflow.runName"
+    log.info "Resume               : $workflow.resume"
+    log.info "Script Name          : $workflow.scriptName"
+    log.info "Script File          : $workflow.scriptFile"
+    log.info "Home Directory       : $workflow.homeDir"
+    log.info "Work Directory       : $workflow.workDir"
+    log.info "Launch Directory     : $workflow.launchDir"
+    log.info "Command line         : $workflow.commandLine"
+    log.info "Config Files         : $workflow.configFiles"
+    log.info "Config Profile       : $workflow.profile"
+    log.info "Container Engine     : $workflow.containerEngine"
+    log.info "Container            : $workflow.container"
+    log.info "Session ID           : $workflow.sessionId"
+    log.info "Script ID            : $workflow.scriptId"
+    log.info ""
+    log.info "-------------------------------- Workflow parameters ---------------------------------"
+    log.info ""
+    log.info "date                 : ${params.date}"
+    log.info "input                : ${params.input}"
+    log.info "output               : ${params.output}"
+    log.info "n                    : ${params.n}"
+    log.info ""
+    log.info "--------------------------------------------------------------------------------------"
+    log.info ""
+}
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    NAMED WORKFLOW FOR PIPELINE : Run main Lipinski-B/RNAseq analysis pipeline
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+
 workflow RNAseq {
     take:
         fastq
@@ -33,6 +99,21 @@ workflow RNAseq {
     //emit:
         //result = Result_all.out
 }
+
+
+
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RUN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow {
+    RNAseq(Channel.fromFilePairs("/mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/data/demultiplexed/*_R{1,2}.fastq.gz", checkIfExists:true))
+}
+
 
 
 
@@ -115,3 +196,17 @@ process KALISTO_PAIRED_END {
     THE END
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+
+workflow.onComplete {
+	this.nextflowMessage()
+	log.info "Completed at: " + workflow.complete
+	log.info "Duration    : " + workflow.duration
+	log.info "Success     : " + workflow.success
+	log.info "Exit status : " + workflow.exitStatus
+	log.info "Error report: " + (workflow.errorReport ?: '-')}
+
+workflow.onError {
+	this.nextflowMessage()
+	log.info "Workflow execution stopped with the following message:"
+	log.info "  " + workflow.errorMessage}
