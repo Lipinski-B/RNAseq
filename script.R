@@ -8,7 +8,6 @@ logs.path <- "/home/bobo/Bureau/Git/result/01_KALLISTO/"
 logs.files <- list.files(logs.path, pattern = "_*E_run_info.json$", full.names = TRUE)
 logs.result <- data.frame()
 
-
 for (log in logs.files) {
   log.json <- t(as.data.frame(jsonlite::fromJSON(log)))
   log.json <- as.data.frame(log.json[c("n_targets", "n_processed", "n_pseudoaligned", "n_unique", "p_pseudoaligned", "p_unique"), ])
@@ -40,7 +39,7 @@ for (col in c("n_targets", "n_processed", "n_pseudoaligned", "n_unique", "p_pseu
           facet_wrap(vars(Feature), scales = "free"))
 }
 
-
+logs.subset <- logs.pivot %>% filter(Feature == col)
 moyennes <- logs.subset %>% group_by(Protocol) %>% summarise(moyenne = mean(Value, na.rm = TRUE))
 ggplot(logs.subset) + aes(x = Protocol, y = Value, fill = Condition) +
   geom_boxplot() +

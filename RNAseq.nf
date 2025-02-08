@@ -40,7 +40,7 @@ if (params.help) {
     log.info "--output                      FOLDER                      Folder where you want to find your result."
     log.info ""
     log.info "Optional arguments:"
-    log.info "--protocol                    STRING                      [PE/SE] Choose the protocol to analyse (Default : PE)"
+    log.info "--protocol                    STRING                      [PE/SE] Choose the protocol to analyse between Paired-end (PE) and Single-end (SE) (Default : PE)"
     
     exit 0
 } else {
@@ -94,12 +94,26 @@ workflow RNAseq {
         MULTIQC(FASTQC.out.FASTQC_result.collect())
 
         KALISTO_INDEX()
-        
+
+        // Exercice 1 : Perform Differential Expression Analysis at transcript level comparing untreated with treated samples.
+        // Exercice 2 : Develop a Nextflow pipeline that performs isoform quantification using Kallisto and assembles the
+        //              resulting counts into a matrix format. The pipeline should be capable of switching between single-end and
+        //              paired-end modes based on Nextflow parameters.
+        // Exercice 2 : Implement the DE analysis with Sleuth or DESeq2 as a Nexflow module, using as input a metadata file
+        //              defining the condition of each FASTQ files.
+
         if (params.protocol == "SE") {
             KALISTO_SINGLE_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
+            //DESEQ2_SINGLE_END()
+        } else if (params.protocol == "PE") {
+            KALISTO_PAIRED_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
+            //DESEQ2_PAIRED_END()
+
+        // Exercice 1 : Compare Single-end and Paired-end based on the number of Differentially expressed transcripts.
         } else if (params.protocol == "PE") {
             KALISTO_SINGLE_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
             KALISTO_PAIRED_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
+            //DESEQ2_COMPARE()
         }
     
     //emit:
