@@ -1,3 +1,0 @@
-sudo singularity build /mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg docker://ajslee/kallisto:0.51.1
-
- singularity exec -B /mnt/:/mnt/ /mnt/datagenetique/ANALYSIS/BIT/PROJECTS/BL/Projet/SKILLS2/script/kallisto.0.51.1.simg kallisto

@@ -31,3 +31,4 @@ dependencies:
   - r-readr
   - r-rmdformats
   - r-dt
+  - r-ggvenndiagram

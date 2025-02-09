@@ -261,14 +261,12 @@ process DESEQ2_ANALYSIS {
         
     output:
         path("*.html")
+        //path("*_count.csv")
+        
 
     script:
     """
-        
     Rscript ${baseDir}/bin/report.R ${params.protocol} ${params.metadata} "${params.output}/${params.protocol}/QUANTIFICATION" "${baseDir}" "." #"${params.output}/${params.protocol}"
-    
-    # Rscript /home/bobo/Bureau/Git/script/RNAseq/bin/report.R SE "/home/bobo/Bureau/Git/script/RNAseq/dependencies/metadata.SE.csv" "/home/bobo/Bureau/Git/result/01_KALLISTO" "/home/bobo/Bureau/Git/script/RNAseq" "/home/bobo/Bureau/Git/result" 
-    # Rscript /home/bobo/Bureau/Git/script/RNAseq/bin/report.R PE "/home/bobo/Bureau/Git/script/RNAseq/dependencies/metadata.PE.csv" "/home/bobo/Bureau/Git/result/01_KALLISTO" "/home/bobo/Bureau/Git/script/RNAseq" "/home/bobo/Bureau/Git/result" 
     """
 }
 

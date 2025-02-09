@@ -8,7 +8,7 @@ output <- args[5]
 
 
 rmarkdown::render(paste0(script.dir,'/bin/report.Rmd'), output_dir='.',
-                  params = list(protocol = protocol, metadata.file=metadata.file, result.dir=result.dir, script.dir=script.dir),
+                  params = list(protocol = protocol, metadata.file=metadata.file, result.dir=result.dir, script.dir=script.dir,output=output),
                   #output_file = paste0('report_', protocol, '.html'))
                   output_file = paste0(output,'/report_', protocol, '.html'))
 
