@@ -4,7 +4,7 @@
 ## Description of my results
 
 ### Nextflow pipeline
-In this git repository, you will find all the code written to build the nextflow pipeline. This pipeline has been developed to perform RNAseq analyses from FASTQ files and provides answers to the following test exercices
+In this git repository, you will find all the code written to build the nextflow pipeline. This pipeline has been developed to perform RNAseq analyses from FASTQ files and to provides answers to the test exercices
 
 I invite you to read and follow the Dependencies, Parameters and Usage sections if you want to test it out.
 
@@ -17,12 +17,12 @@ Also, you will find a last HTML report that I have been able to produce from my 
 This is the main HTML you should read at first : result/comparison_SE_PE.html
 
 Inside this last HTML, you will be able to find :
-  * boxplots to compare kallisto results between protocols,
+  * boxplots to compare kallisto results between protocols Single-End (SE) and Paired-End (PE),
   * all the results from the report_PE.html and report_SE.html files,
-  * an intersection of the different differential gene expression lists produced to count the number of differentially expressed transcripts,
-  * and a multivariate experimental model of differential expression to obtain the result by processing all the variability at once. I write it as experimental because I think it would need more time to be right and well developed.
+  * an intersection of the different differential transcripts expression lists produced to count the number of differentially expressed transcripts between the 2 conditions : Treated and Untreated,
+  * and a multivariate experimental model of differential expression to obtain the result by processing all the variability at once (Protocol/Contition). I write it as experimental because I think it would need more time to be right and well developed.
 
-I would have liked so much to take more time to make the workflow cleaner, such as creating the nextflow module, improving protocol switching, making the use of the metadata file more permissive, and further developing the DEA report (Gene ontology enrichment, cleaner figure and code, gene regularoty network, ... ). 
+I would have liked so much to take more time to make the workflow cleaner, such as creating the nextflow module, improving protocol switching, making the use of the metadata file more permissive, and further developing the DEA report (Gene ontology enrichment, cleaner figure and code, gene regularoty network, improve the modularity, ... ). 
 
 Also, a shiny app would be better to produce a better report, the R code here includes options to vary padj and FC thresholds, the initial idea was to perform a report by modify dynamically these thresholds. 
 
