@@ -22,13 +22,13 @@ library(tximport)
 library(readr)
 library(pheatmap)
 library(RColorBrewer)
-source(file = "/home/bobo/Bureau/Git/script/RNAseq/fonction.r")
+source(file = "/home/bobo/Bureau/Git/script/RNAseq/bin/fonction.r")
 ```
 
 # Informations générales {.tabset}
 
 ```{r, echo=F, warning=F, error=F, message=F}
-logs.path <- "/home/bobo/Bureau/Git/result/01_KALLISTO/"
+logs.path <- "/home/bobo/Bureau/Git/result/res"
 logs.files <- list.files(logs.path, pattern = "_*E_run_info.json$", full.names = TRUE)
 logs.result <- data.frame()
 
@@ -96,29 +96,34 @@ for (col in cols) {
 
 # Differental Expression : Treated vs Untreated
 ```{r, echo=F, warning=F, error=F, message=F}
-counts.path <- "/home/bobo/Bureau/Git/result/01_KALLISTO"
+counts.path <- "/home/bobo/Bureau/Git/result/res/"
 counts.files <- list.files(counts.path, pattern = "_*E_abundance.tsv", full.names = TRUE)
 counts.result <- data.frame()
-names(counts.files) <- c(
-  "Treated1_PE", "Treated1_SE", "Treated2_PE", "Treated2_SE", "Treated3_PE", "Treated3_SE", "Treated4_PE", "Treated4_SE", 
-  "Untreated1_PE", "Untreated1_SE", "Untreated2_PE", "Untreated2_SE", "Untreated3_PE", "Untreated3_SE", "Untreated4_PE", "Untreated4_SE"
-)
+#names(counts.files) <- c(
+#  "Treated1_PE", "Treated1_SE", "Treated2_PE", "Treated2_SE", "Treated3_PE", "Treated3_SE", "Treated4_PE", "Treated4_SE", 
+#  "Untreated1_PE", "Untreated1_SE", "Untreated2_PE", "Untreated2_SE", "Untreated3_PE", "Untreated3_SE", "Untreated4_PE", "Untreated4_SE"
+#)
 ```
 
 ```{r, echo=F, warning=F, error=F, message=F}
-tx2gene <- read_csv("/home/bobo/Bureau/Git/script/RNAseq/tx2gene.gencode.v27.csv")
+tx2gene <- read_csv("/home/bobo/Bureau/Git/script/RNAseq/dependencies/tx2gene.gencode.v27.csv")
 count.txi <- tximport(counts.files, type = "kallisto", tx2gene = tx2gene, ignoreAfterBar = TRUE)
 
-metadata <- data.frame(
-  sample = c(
-    "Treated1_PE", "Treated1_SE", "Treated2_PE", "Treated2_SE", "Treated3_PE", "Treated3_SE", "Treated4_PE", "Treated4_SE",
-    "Untreated1_PE", "Untreated1_SE", "Untreated2_PE", "Untreated2_SE", "Untreated3_PE", "Untreated3_SE", "Untreated4_PE", "Untreated4_SE"
-  ),
-  condition = factor(c(rep("Treated",8),rep("Untreated",8) )),
-  protocol = factor(rep(c("PE", "SE"), 8))
-)
-rownames(metadata) <- colnames(count.txi$counts)
+#metadata <- data.frame(
+#  sample = c(
+#    "Treated1_PE", "Treated1_SE", "Treated2_PE", "Treated2_SE", "Treated3_PE", "Treated3_SE", "Treated4_PE", "Treated4_SE",
+#    "Untreated1_PE", "Untreated1_SE", "Untreated2_PE", "Untreated2_SE", "Untreated3_PE", "Untreated3_SE", "Untreated4_PE", "Untreated4_SE"
+#  ),
+#  condition = factor(c(rep("Treated",8),rep("Untreated",8) )),
+#  protocol = factor(rep(c("PE", "SE"), 8))
+#)
+#rownames(metadata) <- colnames(count.txi$counts)
+
+metadata <- read_csv(file = "/home/bobo/Bureau/Git/script/RNAseq/dependencies/metadata.csv")
+names(counts.files) <- metadata$sample
+  
 ```
+
 
 
 
