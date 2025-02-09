@@ -1,18 +1,20 @@
 # RNA-Pipeline 
 [![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/repository/docker/lipinskiboris/rnaseq)
 
-## Description of the pipeline and my results
+## Description of my results
 
 ### Nextflow pipeline
 In this git repository, you will find all the code written to build the nextflow pipeline. This pipeline has been developed to perform RNAseq analyses from FASTQ files and provides answers to the following test exercices
 
 I invite you to read and follow the Dependencies, Parameters and Usage sections if you want to test it out.
 
-Two firsts reports are available : report_PE.html + report_SE.html. These reports are the typical standard output you will get when you run the pipeline.
+Two firsts reports are available in the result folder : report_PE.html + report_SE.html. These reports are the typical standard output you will get when you run the pipeline.
 
 ### Biologicals results
 
 Also, you will find a last HTML report that I have been able to produce from my computer in the result folder, to give answers to the exercice 1 and 2, and also to this specific task : Compare Single-end and Paired-end based on the number of Differentially expressed transcripts.
+
+This is the main HTML you should read at first : result/comparison_SE_PE.html
 
 Inside this last HTML, you will be able to find :
   * boxplots to compare kallisto results between protocols,

@@ -164,10 +164,10 @@ process FASTQC {
     R2 = fastq.find { it =~ /_R2\.fastq\.gz$/ }
 
     '''
-    if [ !{params.protocol} == "PE" ] ; then
-        pairs="!{R1} !{R2}"
-    else
+    if [ !{params.protocol} != "SE" ] ; then
         pairs="!{R2}"
+    else
+        pairs="!{R1} !{R2}"
     fi
 
 	fastqc -t !{task.cpus} ${pairs}
