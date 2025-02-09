@@ -164,7 +164,7 @@ process FASTQC {
     R2 = fastq.find { it =~ /_R2\.fastq\.gz$/ }
 
     '''
-    if [ !{params.protocol} != "SE" ] ; then
+    if [ !{params.protocol} == "SE" ] ; then
         pairs="!{R2}"
     else
         pairs="!{R1} !{R2}"
