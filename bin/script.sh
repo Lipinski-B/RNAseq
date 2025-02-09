@@ -10,6 +10,18 @@ SCRIPT=$WORK/script
 nextflow run $SCRIPT/RNAseq/RNAseq.nf --input $DATA --output $RSLT --protocol "PE" -profile docker -resume
 
 
+
+
+WORK=/home/bobo/Bureau/Git ; 
+DATA=$WORK/data
+RSLT=$WORK/result_git
+SCRIPT=$WORK/script
+nextflow run Lipinski-B/RNAseq --input $DATA --output $RSLT --protocol "PE" -profile docker -resume
+
+
+
+
+
 docker build -t mon-app:1.0 .
 
 
