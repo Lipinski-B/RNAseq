@@ -24,3 +24,10 @@ dependencies:
   - r-ggbeeswarm
   - r-nmf
   - r-rmarkdown
+  - r-jsonlite
+  - r-dplyr
+  - bioconductor-tximportData
+  - bioconductor-tximport
+  - r-readr
+  - r-rmdformats
+  - r-dt

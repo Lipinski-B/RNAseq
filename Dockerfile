@@ -13,7 +13,7 @@ LABEL about.license="GNU-3.0"
 ################## INSTALLATION ######################
 RUN apt-get update --allow-releaseinfo-change && \
     apt-get install -y --no-install-recommends \
-    curl pandoc \
+    curl pandoc libssl-dev libfontconfig1-dev libxml2-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev \
     bzip2 \
     ca-certificates \
     procps \

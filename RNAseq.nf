@@ -20,28 +20,32 @@ def nextflowMessage() {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 log.info "--------------------------------------------------------------------------------------"
-log.info ""
-log.info ""
+log.info " "
+log.info " "
 log.info "          RNAseq pipeline for the Differential Expression analysis."
-log.info ""
-log.info ""
-log.info ""
+log.info " "
+log.info " "
 
 if (params.help) {
     log.info "------------------------------------------------------------------------------------------------------------------------------"
     log.info "  USAGE : nextflow run Lipinski-B/RNAseq --input /data/ --output /output/ "
     log.info "------------------------------------------------------------------------------------------------------------------------------"
-    log.info ""
+    log.info " "
     log.info "nextflow run Lipinski-B/RNAseq [-r v1.0 -profile docker] [OPTIONS]"
-    log.info ""
+    log.info " "
     log.info "Mandatory arguments:"
     log.info ""
     log.info "--input                       FOLDER                      Folder where you can find your data (fasta/fastq files)."
     log.info "--output                      FOLDER                      Folder where you want to find your result."
+    log.info "--protocol                    STRING                      [PE/SE] Choose the protocol to analyse between Paired-end (PE) and Single-end (SE) (Default : PE)"
+    log.info "--metadata                    FILE                        File to use as metadata file"
     log.info ""
     log.info "Optional arguments:"
-    log.info "--protocol                    STRING                      [PE/SE] Choose the protocol to analyse between Paired-end (PE) and Single-end (SE) (Default : PE)"
-    
+    log.info ""
+    log.info "--cpu                         INT                         Number of CPU to uses (Default : 2)"
+
+
+
     exit 0
 } else {
     log.info "-------------------------------- Nextflow parameters ---------------------------------"
@@ -74,7 +78,7 @@ if (params.help) {
     log.info "cpu                  : ${params.cpu}"
     log.info ""
     log.info "--------------------------------------------------------------------------------------"
-    log.info ""
+    log.info " "
 }
 
 
@@ -91,8 +95,6 @@ workflow RNAseq {
 
     main:    
         FASTQC(fastq)
-        MULTIQC(FASTQC.out.FASTQC_result.collect())
-
         KALISTO_INDEX()
 
         // Exercice 1 : Perform Differential Expression Analysis at transcript level comparing untreated with treated samples.
@@ -104,18 +106,22 @@ workflow RNAseq {
 
         if (params.protocol == "SE") {
             KALISTO_SINGLE_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
-            //DESEQ2_SINGLE_END()
+            DESEQ2_ANALYSIS(KALISTO_SINGLE_END.out.EXRACT_INFO_ch.collect())
+            MULTIQC(FASTQC.out.FASTQC_result.collect(), KALISTO_SINGLE_END.out.EXRACT_MULTIQC_ch.collect())
+    
         } else if (params.protocol == "PE") {
             KALISTO_PAIRED_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
-            //DESEQ2_PAIRED_END()
-
+            DESEQ2_ANALYSIS(KALISTO_PAIRED_END.out.EXRACT_INFO_ch.collect())
+            MULTIQC(FASTQC.out.FASTQC_result.collect(), KALISTO_PAIRED_END.out.EXRACT_MULTIQC_ch.collect())
+    
         // Exercice 1 : Compare Single-end and Paired-end based on the number of Differentially expressed transcripts.
-        } else if (params.protocol == "PE") {
+        } else {
             KALISTO_SINGLE_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
             KALISTO_PAIRED_END(fastq, KALISTO_INDEX.out.KALISTO_INDEX_result)
-            //DESEQ2_COMPARE()
+            //DESEQ2_COMPARE() --> Custom Rmd report in bin folder
         }
-    
+
+        
     //emit:
         //result = Result_all.out
 }
@@ -139,12 +145,12 @@ workflow {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PROCESS AVAILABLE
+    AVAILABLE PROCESS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 process FASTQC {
-    publishDir "${params.output}/00_QC", mode: 'copy', pattern: '{*fastqc.zip}'
+    publishDir "${params.output}/${params.protocol}/QC", mode: 'copy', pattern: '{*fastqc.zip}'
 	cpus "${params.cpu}"
         
     input:
@@ -157,39 +163,20 @@ process FASTQC {
 	R1 = fastq.find { it =~ /_R1\.fastq\.gz$/ }
     R2 = fastq.find { it =~ /_R2\.fastq\.gz$/ }
 
-    if (params.protocol == "SE") {
-        pairs="${R1} ${R2}"
-    }else{
-        pairs="${R2}"
-    }
-
     '''
-	fastqc -t !{task.cpus} !{pairs}
-    '''
-}
+    if [ !{params.protocol} == "PE" ] ; then
+        pairs="!{R1} !{R2}"
+    else
+        pairs="!{R2}"
+    fi
 
-process MULTIQC {
-    cpus '1'
-    publishDir "${params.output}/00_QC", mode: 'copy'
-
-    input:
-        path(file) 
-
-    output:
-        path("multiqc_report.html")
-        path("multiqc_data")
-    
-    shell:
-    '''
-    multiqc .
+	fastqc -t !{task.cpus} ${pairs}
     '''
 }
-
-
 
 process KALISTO_INDEX {
     tag "INDEX"
-    publishDir "${params.output}/00_INDEX", mode: 'copy'
+    publishDir "${params.output}/${params.protocol}/QUANTIFICATION", mode: 'copy'
     cpus "${params.cpu}"
 
     output:
@@ -206,7 +193,7 @@ process KALISTO_INDEX {
 
 process KALISTO_SINGLE_END {
     tag "${ID}"
-    publishDir "${params.output}/01_KALLISTO", mode: 'copy'
+    publishDir "${params.output}/${params.protocol}/QUANTIFICATION", mode: 'copy'
     cpus "${params.cpu}"
 
     input:
@@ -215,11 +202,12 @@ process KALISTO_SINGLE_END {
 
     output:
         path("*.{tsv,json}"), emit : EXRACT_INFO_ch
+        path("kallisto_output_*"),            emit : EXRACT_MULTIQC_ch
 
     script:
     R2 = fastq.find { it =~ /_R2\.fastq\.gz$/ }
     """
-    kallisto quant -l 550 -s 150 -b 10 -i ${index} -o ${ID}/ --single -t ${task.cpus} ${R2}
+    kallisto quant -l 550 -s 150 -b 10 -i ${index} -o ${ID}/ --single -t ${task.cpus} ${R2} > kallisto_output_${ID}.log 2>&1
     mv ${ID}/abundance.tsv ${ID}_SE_abundance.tsv
     mv ${ID}/run_info.json ${ID}_SE_run_info.json
     """
@@ -227,7 +215,7 @@ process KALISTO_SINGLE_END {
 
 process KALISTO_PAIRED_END {
     tag "${ID}"
-    publishDir "${params.output}/01_KALLISTO", mode: 'copy'
+    publishDir "${params.output}/${params.protocol}/QUANTIFICATION", mode: 'copy'
     cpus "${params.cpu}"
 
     input:
@@ -236,15 +224,53 @@ process KALISTO_PAIRED_END {
 
     output:
         path("*.{tsv,json}"), emit : EXRACT_INFO_ch
+        path("kallisto_output_*"),            emit : EXRACT_MULTIQC_ch
 
     script:
     """
-    kallisto quant -l 550 -s 150 -b 10 -i ${index} -o ${ID}/ -t ${task.cpus} ${fastq}
+    kallisto quant -l 550 -s 150 -b 10 -i ${index} -o ${ID}/ -t ${task.cpus} ${fastq} > kallisto_output_${ID}.log 2>&1
     mv ${ID}/abundance.tsv ${ID}_PE_abundance.tsv
     mv ${ID}/run_info.json ${ID}_PE_run_info.json
     """
 }
 
+process MULTIQC {
+    cpus '1'
+    publishDir "${params.output}/${params.protocol}/QC", mode: 'copy'
+
+    input:
+        path(file) 
+        path(info)
+
+    output:
+        path("multiqc_report.html")
+        path("multiqc_data")
+    
+    shell:
+    '''
+    multiqc .
+    '''
+}
+
+process DESEQ2_ANALYSIS {
+    publishDir "${params.output}/${params.protocol}/", mode: 'copy'
+    stageInMode 'copy'
+
+    input:
+        path(info)
+        
+    output:
+        path("*.html")
+
+    script:
+    """
+        
+    Rscript ${baseDir}/bin/report.R ${params.protocol} ${params.metadata} "${params.output}/${params.protocol}/QUANTIFICATION" "${baseDir}" "." #"${params.output}/${params.protocol}"
+    
+    # Rscript /home/bobo/Bureau/Git/script/RNAseq/bin/report.R SE "/home/bobo/Bureau/Git/script/RNAseq/dependencies/metadata.SE.csv" "/home/bobo/Bureau/Git/result/01_KALLISTO" "/home/bobo/Bureau/Git/script/RNAseq" "/home/bobo/Bureau/Git/result" 
+    # Rscript /home/bobo/Bureau/Git/script/RNAseq/bin/report.R PE "/home/bobo/Bureau/Git/script/RNAseq/dependencies/metadata.PE.csv" "/home/bobo/Bureau/Git/result/01_KALLISTO" "/home/bobo/Bureau/Git/script/RNAseq" "/home/bobo/Bureau/Git/result" 
+    """
+}
 
 
 
