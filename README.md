@@ -4,7 +4,7 @@
 ## Description of my results
 
 ### Nextflow pipeline
-In this git repository, you will find all the code written to build the nextflow pipeline. This pipeline has been developed to perform RNAseq analyses from FASTQ files and to provides answers to the test exercices
+In this git repository, you will find all the code written to build the nextflow pipeline. This pipeline has been developed to perform RNAseq analyses from FASTQ files.
 
 I invite you to read and follow the Dependencies, Parameters and Usage sections if you want to test it out.
 
@@ -12,7 +12,7 @@ Two firsts reports are available in the result folder : report_PE.html + report_
 
 ### Biologicals results
 
-Also, you will find a last HTML report that I have been able to produce from my computer in the result folder, to give answers to the exercice 1 and 2, and also to this specific task : Compare Single-end and Paired-end based on the number of Differentially expressed transcripts.
+Also, you will find a last HTML report that I have been able to produce from my computer in the result folder, to give answers to this specific task : Compare Single-end and Paired-end based on the number of Differentially expressed transcripts.
 
 This is the main HTML you should read at first : result/comparison_SE_PE.html
 
