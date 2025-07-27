@@ -10,9 +10,6 @@ I invite you to read and follow the Dependencies, Parameters and Usage sections 
 
 Two firsts reports are available in the result folder : report_PE.html + report_SE.html. These reports are the typical standard output you will get when you run the pipeline.
 
-je supprime mon test
-je refait un test
-
 ### Biologicals results
 
 Also, you will find a last HTML report that I have been able to produce from my computer in the result folder, to give answers to this specific task : Compare Single-end and Paired-end based on the number of Differentially expressed transcripts.
