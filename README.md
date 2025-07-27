@@ -10,7 +10,7 @@ I invite you to read and follow the Dependencies, Parameters and Usage sections 
 
 Two firsts reports are available in the result folder : report_PE.html + report_SE.html. These reports are the typical standard output you will get when you run the pipeline.
 
-Aujourd'hui, je fais un test pour voir si j'arrive à faire un push
+je supprime mon test
 
 ### Biologicals results
 
